@@ -1,0 +1,14 @@
+# Binary files
+*.exe
+*.obj
+
+# Debug folder
+build
+.vscode
+
+# upd files
+*.upd
+*.src
+*.TMP
+*.tmp
+upd.for
