@@ -1605,9 +1605,10 @@ C-
       implicit real*8 (a-h,o-z)
       CHARACTER*120 REC
       CHARACTER*11  RCT
+      CHARACTER*2   LISO
       DIMENSION     ZAP(*),XTH(*),RIN(*),XFS(*)
 C*
-      DATA RPI2/ 0.886226925 /
+      DATA RPI2/ 0.886226925D0 /
       NM  =0
       IZA0=0
       IVER=612
@@ -1616,11 +1617,17 @@ C* Try to identify the INTER version
       IF(REC(39:51).EQ.'INTER VERSION') THEN
         READ (REC(52:56),864,ERR=42) VER
         IVER=NINT(VER*100)
+        WRITE(*,*) "Detected INTER version", IVER
+        WRITE(LER,*) "Detected INTER version", IVER
 C* Position the file to the beginning of the data
    30   READ (LXS,860,END=90) REC
-        IF(IVER.GE.612) THEN
+        IF((IVER.GE.612) .AND. (IVER.LE.800)) THEN
           IF(REC(1:16).NE.' Material number') GO TO 30
           READ (REC(26:31),865) MAT
+        ELSE IF(IVER.GT.800) THEN
+          IF(REC(1:23).NE.'   Z   A LISO  LFS  MT ') GO TO 30
+C* Read the line with dashes
+          READ (LXS,860,END=90) REC
         ELSE
           IF(REC(1:16).NE.'  MAT    ZA    M') GO TO 30
         END IF
@@ -1631,7 +1638,7 @@ C* Header record missing - assume INTER Version 6.12 or higher
 C* Process each entry in turn on the INTER output file
    40 READ (LXS,860,END=90) REC
    42 IF(REC(1:20).EQ.'                    ') GO TO 40
-      IF(IVER.GE.612) THEN
+      IF((IVER.GE.612) .AND. (IVER.LE.800)) THEN
         IF(REC(1:16).EQ.'  Z    A  LISO  ') GO TO 40
         IF(REC(1:16).EQ.' Material number') THEN
           READ (REC(26:31),865) MAT
@@ -1639,6 +1646,25 @@ C* Process each entry in turn on the INTER output file
         END IF
         READ (REC,861) IZ,IA,LIS0,LFS,MT,RCT,SG0,SE0,STH,GWE,RI,SFS,S14
         IZA=IZ*10000+IA*10+LIS0
+        ZA =IZA*0.1
+        ZAM=ZA
+        STH=STH*RPI2
+C* Assume format INTER 8.09 or newer - read all records that conform to
+      ELSE IF(IVER.GT.800) THEN
+        READ(REC,866) IZ,IA,LISO,LFS,MT,RCT,SG0,
+     &                SE0,STH,GWE,RI,SFS,S14,MAT
+C*        WRITE(LER,866) IZ,IA,LISO,LFS,MT,RCT,SG0,
+C*     &                 SE0,STH,GWE,RI,SFS,S14,MAT
+C* Ignore LIS0 for now, since it is a string in the format
+        ILIS0=0
+        IF (LISO.EQ." m") THEN
+            ILISO=1
+        ELSE IF (LISO.EQ." n") THEN
+            ILISO=2
+        ELSE
+            ILISO=0
+        END IF
+        IZA=IZ*10000+IA*10 + ILISO
         ZA =IZA*0.1
         ZAM=ZA
         STH=STH*RPI2
@@ -1684,6 +1710,8 @@ C* End-of-file check
   863 FORMAT(I5,F8.1,I4,A11,2E12.5,E11.4,F8.5,E13.5,2E12.5)
   864 FORMAT(F5.0)
   865 FORMAT(I5.0)
+  866 FORMAT(I4,I4,A2,6X,A2,I4,2X,A8,2X,2(1PE12.5),1PE11.4,
+     &       0PF8.5,1PE13.5,2(1PE12.5),I5)
       END
       SUBROUTINE SRCIDX(N,X,R,K)
 C-Title  : SRCIDX
