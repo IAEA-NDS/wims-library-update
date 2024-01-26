@@ -24,7 +24,7 @@ c
       character*80  fn,line,lline
       dimension matef(200),ef(200)
       dimension ddza(5000),hldd(5000)
-      dimension matn(500),zan(500)
+      dimension matn(1000),zan(1000)
 c
 c     Read fission energy released per fission
 c     Output of enfiss.for code
