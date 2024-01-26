@@ -22,7 +22,7 @@ c            update and write the new NJOY input option file.
 c
       character*20  tok(20)
       character*80  fn,line,lline
-      dimension matef(100),ef(100)
+      dimension matef(200),ef(200)
       dimension ddza(5000),hldd(5000)
       dimension matn(500),zan(500)
 c
@@ -48,6 +48,9 @@ c
           i=i+1
           read(line,'(i6,45x,e11.0)')matef(i),ef(i)
           write(*,'(i6,1pe12.5)')matef(i),ef(i)
+          if (i .eq. 200) then
+            write(*,*)' Too many materials in enfiss output file'
+            stop
         enddo
       endif
  200  nmatef=i
