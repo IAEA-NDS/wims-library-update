@@ -61,28 +61,26 @@ C*      DATA FLNI/'TAPE20.'/
       DATA FLNO/'ENFISS.LST'/
       DIMENSION ER(10)
 C*
-      WRITE(LTT, 15)
-      WRITE(LTT, 15) ' ENFISS - Energy released per fission   '
-      WRITE(LTT, 15) ' ====================================   '
-      WRITE(LTT, 15)
-    1 WRITE(LTT, 15) '$   Define Evaluated Nuclear Data Lib.: '
-      READ(LKB,15)FLNI
-      OPEN(UNIT=LIN, FILE=FLNI, STATUS='OLD',ERR=1)
- 
+      WRITE(LTT, 16) ' '
+      WRITE(LTT, 16) ' ENFISS - Energy released per fission   '
+      WRITE(LTT, 16) ' ====================================   '
+      WRITE(LTT, 16)
+    1 WRITE(LTT, 16) '$   Define Evaluated Nuclear Data Lib.: '
+      READ (LKB, 15) FLNI
+      OPEN (UNIT=LIN, FILE=FLNI, STATUS='OLD',ERR=1)
       OPEN (UNIT=LOU,FILE=FLNO,STATUS='UNKNOWN')
- 
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' ENFISS - Energy released per fission   '
-      WRITE(LOU, 15) ' ====================================   '
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' Source evaluated nuclear data file   : ',FLNI
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' Etot=Fission energy excluding neutrinos'
-      WRITE(LOU, 15) ' Eeff=Including capt.product decay      '
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) '   MAT       ZA       AWR        Etot   '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' ENFISS - Energy released per fission   '
+      WRITE(LOU, 16) ' ====================================   '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' Source evaluated nuclear data file   : ',FLNI
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' Etot=Fission energy excluding neutrinos'
+      WRITE(LOU, 16) ' Eeff=Including capt.product decay      '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) '   MAT       ZA       AWR        Etot   '
      1              ,'     Eeff        Eeff                   '
-      WRITE(LOU, 15) '                                [MeV]   '
+      WRITE(LOU, 16) '                                [MeV]   '
      1              ,'    [MeV]    [J/mole]                   '
 C*
    20 READ (LIN,801,END=90) REC,MAT,MF,MT
@@ -230,7 +228,8 @@ C* Try next material
 C*
    90 STOP 'ENFISS Done'
 C*
-   15 FORMAT(2A40)
+   15 FORMAT(2A80)
+   16 FORMAT(2A40)
   801 FORMAT(A66,I4,I2,I3,I5)
   802 FORMAT(6F11.0)
   803 FORMAT(22X,4I11)
