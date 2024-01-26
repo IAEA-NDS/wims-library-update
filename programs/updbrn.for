@@ -176,6 +176,10 @@ c
                    j=j+1
                 endif
               enddo
+              if (ifind.eq.0) then
+                write(*,*)'  Warning: No E data for mat: ',imat,matef(j)
+                write(*,*) j,nmatf,nmatef
+              endif
               if (nn1.eq.2) then
                 write(line,'(i6,1pe11.4)')nn1,eff
                 lline=adjustl(line)

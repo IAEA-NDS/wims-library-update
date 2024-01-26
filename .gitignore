@@ -1,6 +1,7 @@
 # Binary files
 *.exe
 *.obj
+*.map
 
 # Debug folder
 build
