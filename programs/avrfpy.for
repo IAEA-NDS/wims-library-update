@@ -258,7 +258,8 @@ C-
       CHARACTER*1  CHD, RC(10), FLAG(MXFP), CHR1(MXDK,MXFP)
       CHARACTER*2  MX(10)
       CHARACTER*2  CH2,CS(100)
-      CHARACTER*40 BLNK,FLNM,FLNI,FLXS,FLDY,FLNO,FLYA,FLYI,FLOG
+      CHARACTER*40 BLNK
+      CHARACTER*80 FLNM,FLNI,FLXS,FLDY,FLNO,FLYA,FLYI,FLOG
      1            ,FLWI,FLNJ,FLLS
       CHARACTER*80 REC
       DIMENSION    EGB (4),    FRR (4),    FIN (4),  FAV(4)
@@ -312,7 +313,7 @@ C* Analyse a processed F.P. yields file or generate a new one
       WRITE(LTT,692) ' Default F.P.param.file to be processed:',FLYI
       WRITE(LTT,692) '        Enter new name to redefine    or'
       WRITE(LTT,692) '$       Enter "-" to generate new file: '
-      READ (LKB,692) FLNM
+      READ (LKB,691) FLNM
       IYI=0
       IF(FLNM(1:1).EQ.'-') GO TO 20
       IF(FLNM.NE.BLNK) FLYI=FLNM
@@ -361,27 +362,27 @@ C* Define the output list file
       WRITE(LTT,692) '$       Enter new name or "-" to quit : '
       READ (LKB,692) FLNM
       IF(FLNM(1:1).EQ.'-') GO TO 90
-      IF(FLNM.NE.BLNK) FLNO=FLNM
+      IF(FLNM(1:40).NE.BLNK) FLNO=FLNM
       OPEN (UNIT=LOU,FILE=FLNO,STATUS='UNKNOWN')
 C*
 C* Auxilliary processed F.P. yields file
     5 WRITE(LTT,692) ' Short F.P. parameters filename       : ',FLYA
       WRITE(LTT,692) '$     Enter new name or "-" to ignore : '
-      READ (LKB,692) FLNM
+      READ (LKB,691) FLNM
       IYA=0
       IF(FLNM(1:1).NE.'-') THEN
-        IF(FLNM.NE.BLNK) FLYA=FLNM
+      IF(FLNM(1:40).NE.BLNK) FLYA=FLNM
         WRITE(LTT,692) '               Compare reference file : ',FLYI
         WRITE(LTT,692) '                                 to   : ',FLYA
         WRITE(LTT,692) '$                             (y=Yes) : '
-        READ (LKB,692) FLNM
+      READ (LKB,691) FLNM
         IF(FLNM(1:1).EQ.'y' .OR. FLNM(1:1).EQ.'Y') THEN
           LYC=ABS(LYC)
           OPEN (UNIT=LYC,FILE=FLYA,STATUS='OLD',ERR=5)
           GO TO 80
         END IF
 C        WRITE(LTT,692) '$            Write a new file (y=Yes) : '
-C        READ (LKB,692) FLNM
+C        READ (LKB,691) FLNM
 C        IF(FLNM(1:1).NE.'y' .AND. FLNM(1:1).NE.'Y') GO TO 5
         LYA=ABS(LYI)
         OPEN (UNIT=LYA,FILE=FLYA,STATUS='UNKNOWN',ERR=5)
@@ -396,19 +397,19 @@ C* Define the thresholds for printout
         WRITE(LTT,692)
 C*
     6   WRITE(LTT,692) '$Enter nuclide list file/blank=ignore : '
-        READ (LKB,692) FLLS
+        READ (LKB,691) FLLS
         ILST=0
-        IF(FLLS.EQ.BLNK) GO TO 16
+        IF(FLLS(1:40).EQ.BLNK) GO TO 16
 C* Read the list of nuclides from a file
         OPEN (UNIT=LIN,FILE=FLLS,STATUS='OLD',ERR=21)
-        READ (LIN,692,END=20) FLNM
+        READ (LIN,691,END=20) FLNM
         WRITE(LTT,692) '                  Nuclide list header : ',FLNM
         ILST=1
         DO I=1,NFP
           FLAG(I)='L'
         END DO
-    8   READ (LIN,692,END=12) FLNM
-        IF(FLNM.EQ.BLNK) GO TO 12
+    8   READ (LIN,691,END=12) FLNM
+        IF(FLNM(1:40).EQ.BLNK) GO TO 12
         READ (FLNM,694) ZAPI,AMTI
         IF(AMTI.EQ.0) AMTI=ZAPI
         DO 9 I=1,NFP
@@ -468,13 +469,13 @@ C* Define the F.P. yields ENDF file to be processed
       WRITE(LTT,692)
       IDE=0
       WRITE(LTT,692) '$Enter Decay data file/blank to ignore: '
-      READ (LKB,692)   FLDY
+      READ (LKB,691)   FLDY
       IF(FLDY.NE.BLNK)
      1OPEN (UNIT=LDY,FILE=FLDY,STATUS='OLD',ERR=20)
       IDE=1
    21 WRITE(LTT,692) '$Enter F.P.yields file/blank to ignore: '
-      READ (LKB,692) FLNI
-      IF(FLNI.NE.BLNK) THEN
+      READ (LKB,691) FLNI
+      IF(FLNI(1:40).NE.BLNK) THEN
 C*
 C* Case: Fission products yield ENDF file specified
       OPEN (UNIT=LIN,FILE=FLNI,STATUS='OLD',ERR=21)
@@ -509,15 +510,15 @@ C* Extract the ZA value from the F.P. Yields file
 C*
 C* Case: Nuclide list specified
       WRITE(LTT,692) '$Enter nuclide selection list file    : '
-      READ (LKB,692) FLLS
-      IF(FLLS.EQ.BLNK) GO TO 21
+      READ (LKB,691) FLLS
+      IF(FLLS(1:40).EQ.BLNK) GO TO 21
       OPEN (UNIT=LIN,FILE=FLLS,STATUS='OLD',ERR=21)
-      READ (LIN,692,END=20) FLNM
+      READ (LIN,691,END=20) FLNM
       WRITE(LTT,692) '                  Nuclide list header : ',FLNM
       IFPY=0
       NFP =0
-   27 READ (LIN,692,END=28) FLNM
-      IF(FLNM.EQ.BLNK) GO TO 28
+   27 READ (LIN,691,END=28) FLNM
+      IF(FLNM(1:40).EQ.BLNK) GO TO 28
       NFP=NFP+1
       READ (FLNM,694) ZAP(NFP)
       YLD(NFP)=0.
@@ -529,8 +530,8 @@ C*
 C* Define the cross sections file (INTER output)
    34 MTX=0
       WRITE(LTT,692) '$Enter INTER output /blank to ignore  : '
-      READ (LKB,692)   FLXS
-      IF(FLXS.NE.BLNK) THEN
+      READ (LKB,691)   FLXS
+      IF(FLXS(1:40).NE.BLNK) THEN
       OPEN (UNIT=LXS,FILE=FLXS,STATUS='OLD',ERR=34)
 C* Define the reaction type number MT
    35 WRITE(LTT,692) ' Default reaction is Capture (MT=102)   '
@@ -544,7 +545,7 @@ C* Define the filename to store the processed F.P. yields
    36 WRITE(LTT,692) ' Processed F.P. parameters output file: ',FLYI
       WRITE(LTT,692) '$           Enter new name to redefine: '
       READ (LKB,692) FLNM
-      IF(FLNM.NE.BLNK) FLYI=FLNM
+      IF(FLNM(1:40).NE.BLNK) FLYI=FLNM
       OPEN (UNIT=LYI,FILE=FLYI,STATUS='UNKNOWN')
 C* Label the Log-file
       WRITE(LER,692) ' Decay data ENDF file                 : ',FLDY
@@ -558,21 +559,21 @@ C* Label the Log-file
       WRITE(LER,692)
 C*
 C* Define the weighting function for the F.P yields
-      FF=0.
-      DO 37 IG=1,3
-      FAV(IG)=FIN(IG)
-      FRR(IG)=0.
-      FF=FF+FAV(IG)
-   37 CONTINUE
-      FRR( 4)=0.
-      FRR( 2)=(1./EGB(2))*FIN(2)/DLOG(EGB(3)/EGB(2))
+      FF=0
+      DO IG=1,3
+        FAV(IG)=FIN(IG)
+        FRR(IG)=0
+        FF=FF+FAV(IG)
+      END DO
+      FRR( 4)=0
+      FRR( 2)=(1/EGB(2))*FIN(2)/DLOG(EGB(3)/EGB(2))
       IF(MTX.LE.0 .OR. IFPY.LE.0) GO TO 38
 C* If cross sections file is given, find the fissile parent fiss.x-sect.
       CALL REACRT(LXS,LER,18,1,ZA,FTH,FRI,FFS ,IER)
       REWIND LXS
       IF(IER.LT.0) THEN
-        WRITE(LER,883) MAT,ZA
-        WRITE(LTT,883) MAT,ZA
+        WRITE(LER,883) MAT,INT(ZA)
+        WRITE(LTT,883) MAT,INT(ZA)
       ELSE
         FAV(1)=FAV(1)*FTH
         FAV(2)=FAV(2)*FRI/FIN(2)
@@ -598,25 +599,26 @@ C* Process the fission products yields data
      1           ,PAR1,PAR2,PAR3,PAR4,PAR5 ,EGB,FRR ,MXFP,IER)
       IF(IER.GT.0) THEN
         WRITE(LTT,692) ' ERROR reading file                     ',FLNI
+        WRITE(LTT,803) ' IER                                    ',IER
         GO TO 90
       END IF
       WRITE(LTT,892) MAT,IDINT(ZA+0.1)
 C*
    41 CLOSE(UNIT=LIN)
 C* Assign thermal x-sect. and res.int. to the list of F.P. nuclides
-      DO 42 I=1,NFP
-      PAR1(I)=0.
-      PAR2(I)=0.
-      PAR3(I)=0.
-   42 CONTINUE
+      DO I=1,NFP
+        PAR1(I)=0
+        PAR2(I)=0
+        PAR3(I)=0
+      END DO
       IF(MTX.GT.0) CALL REACRT(LXS,LER,MTX,NFP,ZAP,PAR1,PAR2,PAR3 ,IER)
       IF(IER.NE.0) WRITE(LTT,896) IER
       CLOSE(UNIT=LXS)
 C* Assign the decay data to the list of F.P. nuclides
-      DO 44 I=1,NFP
-      HLF (I)=0.
-      IPAR(I)=0
-   44 CONTINUE
+      DO I=1,NFP
+        HLF (I)=0
+        IPAR(I)=0
+      END DO
       IF(IDE.GT.0) CALL DECYMD(LDY,LER,NFP,ZAP,HLF,IPAR
      1                        ,MXDK,CHR1,PAR4,PAR5 ,IER)
 C* Assign capture product branching ratio for the isomer
@@ -718,7 +720,7 @@ C* Calculate cumulative yields if independent yields are given
       IF(MT0.EQ.454) THEN
         CALL YLDCUM(LER,NFP,EPU,ZAP,YLD,HLF,PAR1,PAR2,PAR3,IPAR
      1             ,MXDK,PAR4,PAR5,PAR7,PAR8,FIN)
-        EPUC=0.
+        EPUC=0
       END IF
 C* Check the printout criteria
       IF(IFPY.EQ.1 .AND. ILST.EQ.0)
@@ -819,9 +821,9 @@ C* Next nuclide
       IF(ND.LE.0) GO TO 72
 C*     Check for nearly stable nuclides
       XA =XSAV3G(PAR1(K),PAR2(K)/FIN(2),PAR3(K),FIN)
-      HL =HLF(K)/(3600. * 24.)
+      HL =HLF(K)/FLOAT(3600 * 24)
       IF(XA.GT.0) HL=XA*HL
-      IF(EPU.GT.0 .AND. HL.GT.EPU) GO TO 72
+      IF(EPU.GT.0 .AND. (HL.LE.0 .OR. HL.GT.EPU)) GO TO 72
         IF (JD .GE. MXST) THEN
           WRITE(LTT,884) JD, ZAP(I)
           NDDP(JD)=0
@@ -858,7 +860,7 @@ C* Process the yield for this nuclide
       GO TO 71
    75 CONTINUE
       DO I=1,8
-        PAR8(I)=0.
+        PAR8(I)=0
       END DO
       NP=8
       AMW=ZA
@@ -1068,7 +1070,7 @@ C*
   809 FORMAT(5I15)
   812 FORMAT(A66,I4,I2,I3,I5)
   814 FORMAT(6F11.0)
-  874 FORMAT(F10.2,1P,E10.4,4E10.3,I2,E10.3,0P,F8.1)
+  874 FORMAT(F9.1,1P,E11.4,4E10.3,I2,E10.3,0P,F8.1)
   875 FORMAT(9X,A1,1P,E10.3,0P,F10.2)
   881 FORMAT( ' Log-log interpolable weight function for F.P yields'/
      1        '     Energy     Weight'/
@@ -1954,9 +1956,9 @@ C-D  branching ratios for some known cases.
       implicit real*8 (a-h,o-z)
       DIMENSION ZAP(*),BRC(*)
       DO 20 I=1,NFP
-      BRC(I)=0.
+      BRC(I)=0
 C* 61-Pm-147 giving 43% 61-Pm-148m and 57% 61-Pm-148
-      IF(ABS(ZAP(I)-61147.).LT.0.05) BRC(I)=0.43
+      IF(ABS(ZAP(I)-61147.D0).LT.0.05D0) BRC(I)=0.47D0
    20 CONTINUE
       RETURN
       END
