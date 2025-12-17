@@ -256,7 +256,7 @@ C-R     JEF-2.2 Fission Product Yields, BNFL Sellafield,
 C-R     OECD/NEA Data Bank, JEF/DOC-629.
 C-
       implicit real*8 (a-h,o-z)
-      PARAMETER   (MXFP=5000, MXDK=4, MXST=10)
+      PARAMETER   (MXFP=100000, MXDK=4, MXST=10)
       CHARACTER*1  CHD, RC(10), FLAG(MXFP), CHR1(MXDK,MXFP)
       CHARACTER*2  MX(10)
       CHARACTER*2  CH2,CS(100)
@@ -1764,7 +1764,7 @@ C* Fission product yields data found
       MT =MT0
       READ (REC,696) ZA,AWR,NE
       READ (LIN,696) EN,DD ,INT,II,II,NFP
-      IF(NFP.GT.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded'
+      IF(NFP.GT.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded 1767'
 C* Read the data at the first energy point
       READ (LIN,698) (ZAP (I),FPS(I) ,YLD (I),DD,I=1,NFP)
       DO 41 I=1,NFP
@@ -1796,7 +1796,7 @@ C* Read the data at the next energy point
       YLD1(I)=YLD2(I)
    54 CONTINUE
       READ (LIN,696) E2,DD ,INT,II,II,NFP2
-      IF(NFP2.GT.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded'
+      IF(NFP2.GT.MXFP) STOP 'AVRFPY ERROR - Array capacity exc 1799'
       READ (LIN,698) (ZAP2(I),FPS(I),YLD2(I),DD,I=1,NFP2)
       DO 56 I=1,NFP2
       ZAP2(I)=ZAP2(I)+0.1*FPS(I)
@@ -1830,9 +1830,12 @@ C* Add the contribution to the average
    60 IF(K.GT.NFP) GO TO 50
       Y1=0.
       Y2=0.
+      Y1=0.
+      Y2=0.
       L =J
       IF(J.GT.NFP2) GO TO 62
-      IF(ZAP2(L).GT.ZAP1(I)) GO TO 61
+C *** NEW LINE: Check if I is valid before comparing ***
+      IF(I.LE.NFP1 .AND. ZAP2(L).GT.ZAP1(I)) GO TO 61
       ZP=ZAP2(J)
       Y2=YLD2(J)
       J =J+1
@@ -1840,7 +1843,8 @@ C* Add the contribution to the average
 C* Print warning when yield at E2 for the current isotope is missing
    61 IF(LER.GT. 0) WRITE(LER,801) 2,IDINT(ZAP1(I)+0.1),E2
    62 IF(I.GT.NFP1) GO TO 64
-      IF(ZAP1(I).GT.ZAP2(L)) GO TO 63
+C     === FIX: Don't jump to 63 if ZAP2 is exhausted ===
+      IF(J.LE.NFP2 .AND. ZAP1(I).GT.ZAP2(L)) GO TO 63 
       ZP=ZAP1(I)
       Y1=YLD1(I)
       I =I+1
@@ -1885,7 +1889,7 @@ C* Check the isotope list in the master array
    70 IF(ZAP(K).EQ.ZP) GO TO 76
       IF(ZAP(K).LT.ZP) GO TO 77
 C* Insert an entry in the list
-      IF(NFP.GE.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded'
+      IF(NFP.GE.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded NFP'
       DO 75 L=K,NFP
       ZAP(NFP+K-L+1)=ZAP(NFP+K-L)
       YLD(NFP+K-L+1)=YLD(NFP+K-L)
@@ -1901,7 +1905,7 @@ C* Case: No data for the current isotope in this interval
    77 K  =K+1
       IF(K.LE.NFP) GO TO 70
       NFP=K
-      IF(NFP.GE.MXFP) STOP 'AVRFPY ERROR - Array capacity exceeded'
+      IF(NFP.GE.MXFP) STOP 'AVRFPY ERROR - Array capacity exc NF 1904'
       ZAP(NFP)=ZP
       YLD(NFP)=Y
       IF(I.LE.NFP1 .OR. J.LE.NFP2) GO TO 60
