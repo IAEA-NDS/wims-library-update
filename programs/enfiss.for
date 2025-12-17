@@ -1,6 +1,8 @@
       PROGRAM ENFISS
 C-Title  : Program ENFISS
 C-Purpose: Retrieve Energy/Mole from fission [J/mole] from an ENDF file
+C-Version:
+C-V  2023/11 Extend for LCF=1 format option
 C-M
 C-M  Manual for Porgram ENFISS
 C-M
@@ -47,7 +49,7 @@ C-R     Thermal Reactors, International Conference on Nuclear Energy
 C-R     in Central Europe '99, Portotoz, 6-9 September 1999.
 C-
       CHARACTER*66     REC
-      CHARACTER*40     FLNI,FLNO
+      CHARACTER*80     FLNI,FLNO
 C*         Avogadro's No., eV to Joules
       DATA AVG/ 0.6022 / , EV/1.60219E-19/
 C*
@@ -59,51 +61,65 @@ C*      DATA FLNI/'TAPE20.'/
       DATA FLNO/'ENFISS.LST'/
       DIMENSION ER(10)
 C*
-      WRITE(LTT, 15)
-      WRITE(LTT, 15) ' ENFISS - Energy released per fission   '
-      WRITE(LTT, 15) ' ====================================   '
-      WRITE(LTT, 15)
-    1 WRITE(LTT, 15) '$   Define Evaluated Nuclear Data Lib.: '
-      READ(LKB,15)FLNI
-      OPEN(UNIT=LIN, FILE=FLNI, STATUS='OLD',ERR=1)
- 
+      WRITE(LTT, 16) ' '
+      WRITE(LTT, 16) ' ENFISS - Energy released per fission   '
+      WRITE(LTT, 16) ' ====================================   '
+      WRITE(LTT, 16)
+    1 WRITE(LTT, 16) '$   Define Evaluated Nuclear Data Lib.: '
+      READ (LKB, 15) FLNI
+      OPEN (UNIT=LIN, FILE=FLNI, STATUS='OLD',ERR=1)
       OPEN (UNIT=LOU,FILE=FLNO,STATUS='UNKNOWN')
- 
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' ENFISS - Energy released per fission   '
-      WRITE(LOU, 15) ' ====================================   '
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' Source evaluated nuclear data file   : ',FLNI
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) ' Etot=Fission energy excluding neutrinos'
-      WRITE(LOU, 15) ' Eeff=Including capt.product decay      '
-      WRITE(LOU, 15)
-      WRITE(LOU, 15) '   MAT       ZA       AWR        Etot   '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' ENFISS - Energy released per fission   '
+      WRITE(LOU, 16) ' ====================================   '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' Source evaluated nuclear data file   : ',FLNI
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) ' Etot=Fission energy excluding neutrinos'
+      WRITE(LOU, 16) ' Eeff=Including capt.product decay      '
+      WRITE(LOU, 16)
+      WRITE(LOU, 16) '   MAT       ZA       AWR        Etot   '
      1              ,'     Eeff        Eeff                   '
-      WRITE(LOU, 15) '                                [MeV]   '
+      WRITE(LOU, 16) '                                [MeV]   '
      1              ,'    [MeV]    [J/mole]                   '
- 
+C*
    20 READ (LIN,801,END=90) REC,MAT,MF,MT
- 
+C* 
       IF(MAT.LT.  0) GO TO 90
       IF(MF .NE.  1) GO TO 20
       IF(MT .EQ. 451)THEN
         READ(LIN,803)LIS,LIS0
-   25   READ (LIN,801,END=90) REC,MAT,MF,MT
+   25   READ (LIN,801,END=90) REC,MAT,MF,MT,IS
         IF (MT. EQ. 451) GOTO 25
       ENDIF
       IF(MT .NE.458) GO TO 20
 C* Section giving energy released per fission
-      READ (REC,802) ZA,AWR
-      READ (LIN,803) NN,NPLY,NPLY18,NPLY9
-      NN=NPLY+1
-      DO I=1,NN
-        READ (LIN,802)
-        READ (LIN,802)
-C*      ER=total energy less neutrinos
-        READ (LIN,802) ENU,ENUD,ER(I),ERDD,ET,ETDD
-      END DO
-      READ (LIN,802)
+      READ (REC,805) ZA,AWR,IDM,LFC
+      READ (LIN,801,END=90) REC,MAT,MF,MT
+      READ (REC,803) NN,NPLY,NPLY18,NPLY9
+C...
+C...  print *,'lfc,nply',lfc,nply
+C...
+      IF(LFC.EQ.0) THEN
+C*      -- Constant or polynomial representation order NPLY
+        NN=NPLY+1
+        DO I=1,NN
+          READ (LIN,801) REC
+          READ (LIN,801) REC
+C*        -- ER=total energy less neutrinos
+          READ (LIN,801,END=90) REC,MAT,MF,MT
+          READ (REC,802) ENU,ENUD,ER(I),ERDD,ET,ETDD
+        END DO
+      ELSE
+C*      -- Tabular option - use first set
+        READ (LIN,801,END=90) REC,MAT,MF,MT,IS
+        READ (LIN,801,END=90) REC,MAT,MF,MT,IS
+        READ (LIN,801,END=90) REC,MAT,MF,MT,IS
+C...
+C...    PRINT *,REC,MAT,MF,MT,IS
+C...
+        READ (REC,802) ENU,ENUD,ER(1),ERDD,ET,ETDD
+      END IF
 C* Define the energy released by capture EG
 C* and kinetic energy of the incoming neutron EN. In lie of other
 C* data set: therm.fiss.=0.0025, fast fiss=2MeV.
@@ -201,16 +217,22 @@ C*
 C*
 C* Convert to [Joules/mole *10**-24] (factor included in AVG definition)
       EM=EV*AVG*EE
- 
       WRITE(LOU,804) MAT,ZA+0.1*LIS0,AWR,ERT*1.E-6,EE*1.E-6,EM
- 
+C*
+C* Skip to the end of material
+   30 READ (LIN,801,END=90) REC,MAT,MF,MT,IS
+      IF(MAT.GT.0) GO TO 30
+C*
+C* Try next material
       GO TO 20
- 
+C*
    90 STOP 'ENFISS Done'
 C*
-   15 FORMAT(2A40)
-  801 FORMAT(A66,I4,I2,I3)
+   15 FORMAT(2A80)
+   16 FORMAT(2A40)
+  801 FORMAT(A66,I4,I2,I3,I5)
   802 FORMAT(6F11.0)
   803 FORMAT(22X,4I11)
   804 FORMAT(I6,F10.1,F10.4,2F12.4,1P,E12.4)
+  805 FORMAT(2F11.0,4I11)
       END
