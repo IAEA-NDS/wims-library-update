@@ -542,7 +542,7 @@ C* Reserve space for the real and integer work field
 C* To change No.of keywords, alter parameter NKW and DATA KWRD,DSCR
       PARAMETER      (NKW =16)
       CHARACTER*4     KWRD(16) ,KEY, ALDO1,ALDO2
-      CHARACTER*40    DSCR(16) ,DMMY(2)
+      CHARACTER*80    DSCR(16) ,DMMY(2)
       DIMENSION       RWO(MXRW),IWO(MXIW)
       COMMON /DATFIL/ RDAT
       COMMON /TERWOR/ ITERM,ALDO(2)
@@ -652,7 +652,7 @@ C* All processing completed
      1       (3X,A4,A40))
   604 FORMAT(' Run ',A4,A40)
   609 FORMAT(' WILLIE Error: unknown keyword "',A4,'"')
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
       END
       SUBROUTINE ERRWAR(LTT,IER)
 C-Title  : ERRWAR Subroutine
@@ -688,30 +688,47 @@ C-D
 C-Title  : PROCXS Subroutine
 C-Purpose: Copy(LF2>0) or skip(LF2=0) the WIMS cross section data
       DIMENSION       RWO(*),IWO(*)
+      REAL*16 TMP_READ
+      DIMENSION       TMP_READ(80)
       COMMON /TERWOR/ ITERM,ALDO(2)
       NG12=NG1+NG2
       KLN =2*NG12+4*NG2
 C* Epithermal cross sections
-      READ(LF1,702)               (RWO(I),I=1,KLN)
+      READ(LF1,702)               (TMP_READ(I),I=1,KLN)
+      DO I = 1, KLN
+            RWO(I) = TMP_READ(I)
+      END DO
       IF(LF2.GT.0) WRITE(LF2,702) (RWO(I),I=1,KLN)
       IF(ABS(NF).LE.1) GO TO 40
 C* Fission yield and fission cross section
       KLN=2*NG12
-      READ(LF1,702)               (RWO(I),I=1,KLN)
+      READ(LF1,702)               (TMP_READ(I),I=1,KLN)
+      DO I = 1, KLN
+            RWO(I) = TMP_READ(I)
+      END DO
       IF(LF2.GT.0 .AND.
      1   NF .GT.1) WRITE(LF2,702) (RWO(I),I=1,KLN)
 C* Epithermal scattering matrix
    40 READ(LF1,705)               NDAT2,(RWO(I),I=1,NDAT2)
       IF(LF2.GT.0) WRITE(LF2,705) NDAT2,(RWO(I),I=1,NDAT2)
 C* Temperature list for thermal cross sections
-      READ(LF1,702)               (RWO(I),I=1,NT)
+      READ(LF1,702)               (TMP_READ(I),I=1,NT)
+      DO I = 1, KLN
+            RWO(I) = TMP_READ(I)
+      END DO
       IF(LF2.GT.0) WRITE(LF2,702) (RWO(I),I=1,NT)
       DO 60 K=1,NT
       KLN=2*NG3
-      READ(LF1,702)               (RWO(I),I=1,KLN)
+      READ(LF1,702)               (TMP_READ(I),I=1,KLN)
+      DO I = 1, KLN
+            RWO(I) = TMP_READ(I)
+      END DO
       IF(LF2.GT.0) WRITE(LF2,702) (RWO(I),I=1,KLN)
       IF(ABS(NF).LE.1) GO TO 50
-      READ(LF1,702)               (RWO(I),I=1,KLN)
+      READ(LF1,702)               (TMP_READ(I),I=1,KLN)
+      DO I = 1, KLN
+            RWO(I) = TMP_READ(I)
+      END DO
       IF(LF2.GT.0 .AND.
      1   NF .GT.1) WRITE(LF2,702) (RWO(I),I=1,KLN)
    50 READ(LF1,705)               NDAT3,(RWO(I),I=1,NDAT3)
@@ -726,7 +743,7 @@ C* Temperature list for thermal cross sections
 C-Title  : BINFOR Subroutine
 C-Purpose: Convert binary form of WIMS library to formatted
 C-
-      CHARACTER*40    FLWI,FLWO
+      CHARACTER*80    FLWI,FLWO
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
 C* Logical file units for the binary (source) and formatted (target) lib
@@ -861,7 +878,7 @@ C* Library read error
   190 CALL ERRWAR(LTT,IER)
       RETURN
   601 FORMAT(' Formatted WIMS library written on    : ',A40)
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   701 FORMAT(5I15)
   702 FORMAT(1P,5E15.8)
   703 FORMAT(3(1P,E15.8,I6))
@@ -874,7 +891,7 @@ C-Title  : FORBIN Subroutine
 C-Purpose: Convert formatted form of wims library to binary
 C-
       CHARACTER*80    REC
-      CHARACTER*40    FLWI,FLWO
+      CHARACTER*80    FLWI,FLWO
       DIMENSION       RWO(*),IWO(*),NP1(4)
       COMMON /TERWOR/ ITERM,ALDO(2)
 C* Logical file units for the binary (source) and formatted (target) lib
@@ -1094,7 +1111,7 @@ C* Processing terminated successfully
 C* Library read error
   190 CALL ERRWAR(LTT,IER)
       RETURN
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   692 FORMAT(A80)
   693 FORMAT(A40,I4)
   701 FORMAT(5I15)
@@ -1109,7 +1126,7 @@ C* Library read error
 C-Title  : COPYMT Subroutine
 C-Purpose: Extract data for selected material from wims library
 C-
-      CHARACTER*40    FLNM
+      CHARACTER*80    FLNM
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
 C* Logical file units for source library and output file
@@ -1219,7 +1236,7 @@ C* Library read error
   601 FORMAT(' WILLIE ERROR - Material',I6,' not found')
   602 FORMAT('   Select from the list below:'/ (6X,10I6) )
   603 FORMAT(' Processing material',F8.1,' completed'/)
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   701 FORMAT(5I15)
   702 FORMAT(1P,5E15.8)
   703 FORMAT(1P,3(E15.8,I6))
@@ -1231,7 +1248,7 @@ C* Library read error
 C-Title  : COP1MT Subroutine
 C-Purpose: Extract P1 matrix for a selected material from WIMS library
 C-
-      CHARACTER*40    FLNM
+      CHARACTER*80    FLNM
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
 C* Logical file units for source library and output file
@@ -1295,7 +1312,7 @@ C* Library read error
       RETURN
   501 FORMAT(BN,I20)
   602 FORMAT(' The library contains the following materials:'/(6X,10I6))
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   701 FORMAT(5I15)
   702 FORMAT(1P,5E15.8)
       END
@@ -1318,7 +1335,7 @@ C-D     data set is given on a fine temperature mesh.
 C-D
       CHARACTER*1  FF
       CHARACTER*10 RITY(3)
-      CHARACTER*40 FLN1,FLN2,FLNO,FLNL,FLNM, COMM
+      CHARACTER*80 FLN1,FLN2,FLNO,FLNL,FLNM, COMM
       DIMENSION RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
 C* Default group structure (fast/resonance/thermal)
@@ -1708,7 +1725,7 @@ C* All data compared
   612 FORMAT(1X,A10,' RI MAT.',F8.1,' AND',F8.1)
   614 FORMAT(1X,A1//' RESONANCE INTEGRALS TABLES'/
      1             ,' ==========================')
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   693 FORMAT(A40,I6)
   694 FORMAT(BN,F20.0)
   695 FORMAT(BN,I10)
@@ -1724,7 +1741,7 @@ C* All data compared
 C-Title  : XSDIFF Subroutine
 C-Purpose: Compare cross sections
       CHARACTER*1  FF
-      CHARACTER*40 COM
+      CHARACTER*80 COM
       DIMENSION    XS1(*),XS2(*),RWO(*)
 C* Rel.diff.threshold below which data are considered identical
       DATA ERMX/1.E-5/
@@ -1818,7 +1835,7 @@ C     WRITE(LER,97) COM,IRM,ERM
      2                 ,NS2,NT2,TM2,SG2,RI2,PL2 ,RWO,EPR,NP,IP)
 C-Title  : RIDIFF Subroutine
 C-Purpose: Compare Resonance Integral data sets
-      CHARACTER*40 COM
+      CHARACTER*80 COM
       CHARACTER*8  DASH,  CH8,   REC(10,6)
       CHARACTER*1  FF
       DIMENSION    TM1(*),SG1(*),RI1(NS1,NT1)
@@ -2296,7 +2313,7 @@ C-D
 C-
       PARAMETER       (MXFL=10)
       CHARACTER*10    IDNT(12)
-      CHARACTER*40    BLNK,FLNM,FLNO,FLNI(MXFL)
+      CHARACTER*80    BLNK,FLNM,FLNO,FLNI(MXFL)
       CHARACTER*80    COMM(MXFL)
       DIMENSION       RWO(*),IWO(*), RMT(MXFL)
       COMMON /TERWOR/ ITERM,ALDO(2)
@@ -2558,7 +2575,7 @@ C* Library read error
   602 FORMAT('   Select from the list below:'/ (6X,10I6) )
   603 FORMAT(' Processing material',F8.1,' completed'/)
   605 FORMAT('MAT',I5)
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   701 FORMAT(5I15)
   702 FORMAT(1P,5E15.8)
   703 FORMAT(1P,3(E15.8,I6))
@@ -2768,7 +2785,7 @@ C-D  matrices are read and checked, a correction to the scattering
 C-D  matrix is performed and a new WILLIE cross section file for
 C-D  a material is written. Any P1 scattering matrices are ignored.
 C-D
-      CHARACTER*40 FLN1,FLN2,FLNM
+      CHARACTER*80 FLN1,FLN2,FLNM
       CHARACTER*80 REC
       DIMENSION RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
@@ -2944,7 +2961,7 @@ C* All data compared
   607 FORMAT(//    ' WILLIE - SCATTERING MATRIX TRANSPORT CORRECTION'/
      1             ' ==============================================='/)
   611 FORMAT(A40,2I2)
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   693 FORMAT(A80)
   701 FORMAT(5I15)
   702 FORMAT(1P,5E15.8)
@@ -2961,7 +2978,7 @@ C-D  prepared otherwise can be inserted into the WIMS library
 C-D  with a different nuclide identification number.
 C-D
       CHARACTER*75    REC , REN
-      CHARACTER*40    BLNK, FLNM, FLWI, FLWO, FLNI
+      CHARACTER*80    BLNK, FLNM, FLWI, FLWO, FLNI
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
       DATA BLNK /'                                        '/
@@ -3423,7 +3440,7 @@ C* All processing completed
 C* Error condition reading the library
   690 CALL ERRWAR(LTT,IER)
       RETURN
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   692 FORMAT(A75)
   693 FORMAT(A40,I8)
   694 FORMAT(A40,F8.1)
@@ -3897,7 +3914,7 @@ C* New file written
      1             ' ================================'/)
   607 FORMAT(/'  Mat.ID   At.Wt.   Z Nf Nt Nr   Abund. Filename')
   608 FORMAT(        I8,    F9.4, I4,I3,I3,I3,    F9.4,1X,A40)
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   694 FORMAT(BN,F20.0)
   695 FORMAT(BN,I10)
   701 FORMAT(5I15)
@@ -3912,7 +3929,7 @@ C 706 FORMAT(1P,E15.8,2I6)
 C-Title  : Subroutine DELEMT
 C-Purpose: Delete a material from the WIMS-D library
       CHARACTER*75    REC
-      CHARACTER*40    BLNK, FLNM, FLWI,FLWO
+      CHARACTER*80    BLNK, FLNM, FLWI,FLWO
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
       DATA BLNK /'                                        '/
@@ -4106,7 +4123,7 @@ C* All processing completed
 C* Error condition reading the library
   690 CALL ERRWAR(LTT,IER)
       RETURN
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   692 FORMAT(A75)
   693 FORMAT(A40,I8)
   694 FORMAT(A40,F8.1)
@@ -4122,7 +4139,7 @@ C* Error condition reading the library
 C-Title  : Subroutine CHKLIB
 C-Purpose: Check WIMS-D library integrity
       CHARACTER*75    REC
-      CHARACTER*40    BLNK, FLNM, FLWI,FLWO
+      CHARACTER*80    BLNK, FLNM, FLWI,FLWO
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
       DATA BLNK /'                                        '/
@@ -4512,7 +4529,7 @@ C* Error traps
   810 WRITE(LTT,691) ' CHKLIB ERROR - Incorrect library format'
   890 STOP 'CHKLIB ERROR'
 C*
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   692 FORMAT(A75)
   693 FORMAT(A40,3I8)
   694 FORMAT(A40,F8.1)
@@ -4535,7 +4552,7 @@ C-D  The starter file for a new library is written. Make sure that
 C-D  the energy boundaries and the spectrum are entered with the
 C-D  INCL command before the library is used.
 C-
-      CHARACTER*40    BLNK, FLNM, FLWO
+      CHARACTER*80    BLNK, FLNM, FLWO
       REAL*8          ZERO
       DIMENSION       RWO(*),IWO(*)
       COMMON /TERWOR/ ITERM,ALDO(2)
@@ -4620,7 +4637,7 @@ C* End-of-library filemark
       WRITE(LFO,695) ITERM
       CLOSE(UNIT=LFO)
 C*
-  691 FORMAT(2A40)
+  691 FORMAT(2A80)
   692 FORMAT(A40,I5)
   695 FORMAT(5I15)
   696 FORMAT(5F15.12)

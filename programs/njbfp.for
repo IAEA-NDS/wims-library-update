@@ -38,7 +38,8 @@ C-V
 C*       X4147=0.4667, ref EAF99, rounded to 0.47
        PARAMETER(N4147=4147, X4147=0.47,N5147=5147)
        CHARACTER*80 LINE
-       CHARACTER*40 FLNM,FLE,FLL,BLNK,FLIB,FNAME
+       CHARACTER*40 BLNK
+       CHARACTER*80 FLNM,FLE,FLL,FLIB,FNAME
        CHARACTER*11 ZASYM(NMAT)
        DIMENSION AZE(NFPE),RIDE(NFPE),YE(NFPE)
        DIMENSION AZ(NFP),RID(NFP),Y(NFP)
@@ -58,8 +59,8 @@ C*       Reading input files
        WRITE(LTT,15) '     ---------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FLE
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FLE=FLNM
+       READ (LKB,20) FLNM
+       IF(FLNM(1:40).NE.BLNK) FLE=FLNM
        OPEN (UNIT=LLE,FILE=FLE,STATUS='OLD',ERR=1)
        I=1
        READ(LLE,20) LINE
@@ -75,13 +76,13 @@ C*       Reading input files
        END DO
     2  CLOSE(LLE)
        KFPE=I-1
-       FLNM=BLNK
+       FLNM=BLNK//BLNK
     3  WRITE(LTT,15) '     Define list file for   ALL    F.P: '
        WRITE(LTT,15) '     ---------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FLL
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FLL=FLNM
+       READ (LKB,20) FLNM
+       IF(FLNM(1:40).NE.BLNK) FLL=FLNM
        OPEN (UNIT=LLL,FILE=FLL,STATUS='OLD',ERR=3)
        I=1
        READ(LLL,20) LINE
@@ -101,13 +102,13 @@ C*       Reading input files
        IF (KPDO.LE.0) THEN
          STOP ' Fatal Error:  KFP-all  .LE.  KFP-explicit '
        ENDIF
-       FLNM=BLNK
+       FLNM=BLNK//BLNK
     5  WRITE(LTT,15) '      Define ENDF Library Summary file: '
        WRITE(LTT,15) '     ---------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FLIB
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FLIB=FLNM
+       READ (LKB,20) FLNM
+       IF(FLNM(1:40).NE.BLNK) FLIB=FLNM
        OPEN (UNIT=LIB,FILE=FLIB,STATUS='OLD',ERR=5)
        I=1
        READ(LIB,20) LINE
@@ -125,7 +126,7 @@ C*       Reading input files
 C*
 C*       Process *.njb files
        DO IT=1,2
-        FLNM=BLNK
+       FLNM=BLNK//BLNK
         IF (IT.EQ.1) THEN
          NNN=KFPE
          WRITE(LTT,15) ' Define fiss. yields for explicit F.Ps  '
@@ -138,8 +139,8 @@ C*       Process *.njb files
         WRITE(LTT,15) '     ---------------------------------  '
         WRITE(LTT,15) '                     Default file name: ',FLNM
         WRITE(LTT,15) '$       Enter new name (enter=default): '
-        READ (LKB,15) FLNM
-        IF(FLNM.EQ.BLNK) GO TO 8
+       READ (LKB,20) FLNM
+       IF(FLNM(1:40).EQ.BLNK) GO TO 8
         OPEN (UNIT=LNB,FILE=FLNM,STATUS='OLD',ERR=8)
         DO I=1,NNN
           IF (IT.EQ.1) THEN
@@ -215,13 +216,13 @@ C*
 C*       Open OUTPUT file
 C*
 C*        NJOY
-       FLNM=BLNK
+       FLNM=BLNK//BLNK
     9  WRITE(LTT,15) '     Define NJOY burnup data block file:'
        WRITE(LTT,15) '     ---------------------------------- '
        WRITE(LTT,15) '                     Default file name: ',FNAME
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FNAME=FLNM
+       READ (LKB,20) FLNM
+       IF(FLNM(1:40).NE.BLNK) FNAME=FLNM
        OPEN (UNIT=LNJ,FILE=FNAME,ERR=9)
 C*
 C*      Check if the fission products are on the library
@@ -273,7 +274,7 @@ C*
        WRITE(LTT,*)
        CLOSE(LNJ)
        STOP 'NORMAL END'
-   15  FORMAT(2A40)
+   15  FORMAT(A40,A80)
    16  FORMAT(A40,A11)
    17  FORMAT(A40,I5)
    20  FORMAT(A80)

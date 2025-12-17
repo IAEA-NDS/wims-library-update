@@ -15,6 +15,8 @@ C-V            to fix processing of some BROND evaluations, which
 C-V            contain pseudo-isotopes in isotopic evaluations.
 C-V  11/2004 D. L. Aldama, IAEA
 C-V          - Correction to read MF=1/MT=451 in ENDF-5 format
+C-V  07/2021 A. Trkov
+C-V          Fix long filenames and LRF=7
 C-M
 C-M  Manual for Program GETMF2
 C-M  =========================
@@ -53,7 +55,8 @@ C-
        DIMENSION NRR(NI),ZAI(NI),AWI(NI),ABNI(NI)
        DIMENSION EHIGH(NI,NMAX),AP(NI,NMAX),RRF(NI,NMAX)
        CHARACTER*66 LINE,TAPE
-       CHARACTER*40 FLI,FOU,FLO,FLNM,BLNK
+       CHARACTER*40 BLNK
+       CHARACTER*80 FLI,FOU,FLO,FLNM
        CHARACTER*11 ZSYMAM
        DATA BLNK/'                                        '/
        DATA FLI/'ENDF.DAT'/
@@ -70,23 +73,24 @@ C*    Open I/O files
        WRITE(LTT,15) '    ----------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FLI
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FLI=FLNM
+      READ (LKB,14) FLNM
+      IF(FLNM(1:40).NE.BLNK) FLI=FLNM
        OPEN(UNIT=LIB, FILE=FLI, STATUS='OLD',ERR=1)
-       FLNM=BLNK
+      FLNM=BLNK//BLNK
     2  WRITE(LTT,15) '    Define Output File Name (MF2 file): '
        WRITE(LTT,15) '    ----------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FOU
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
-       IF(FLNM.NE.BLNK) FOU=FLNM
+      READ (LKB,14) FLNM
+      IF(FLNM(1:40).NE.BLNK) FOU=FLNM
        OPEN(UNIT=NOUT,FILE=FOU,ERR=2)
-       FLNM=BLNK
+      FLNM=BLNK//BLNK
     3  WRITE(LTT,15) '    Define   LOG  File Name (LOG file): '
        WRITE(LTT,15) '    ----------------------------------  '
        WRITE(LTT,15) '                     Default file name: ',FLO
        WRITE(LTT,15) '$       Enter new name (enter=default): '
-       READ (LKB,15) FLNM
+      READ (LKB,14) FLNM
+      IF(FLNM(1:40).NE.BLNK) FLO=FLNM
        IF(FLNM.NE.BLNK) FLO=FLNM
        OPEN(UNIT=NLOG,FILE=FLO,ERR=3)
 C*
@@ -148,6 +152,7 @@ C*    Process Evaluated Nuclear Data Library
        CLOSE(NOUT)
        CLOSE(NLOG)
       STOP
+14    FORMAT( A80)
 15    FORMAT(2A40)
 20    FORMAT(A5,I5,A5,A12,A5,F7.1,A5,F10.6,A5,I3)
 30    FORMAT(A3,I2,A5,F7.1,A5,F10.6,A5,F8.6,A5,I3)

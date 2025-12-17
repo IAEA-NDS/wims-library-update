@@ -49,7 +49,7 @@ C-V        04/2001  No. of explicit f.p. NFPE increased from 50 to 80
        PARAMETER(LTT=6,LKB=5,LLE=1,LLL=2,LIB=3,LNJ=4,LNB=7,LWI=8,LBT=9)
        PARAMETER(NFPE=80,NFP=150,NMAT=1024,NFIS=3,SREF0=5.0E3)
        CHARACTER*80 LINE
-       CHARACTER*40 FLNM,FLE,FLL,BLNK,FLIB,FNJ,FWLI,FBAT
+       CHARACTER*80 FLNM,FLE,FLL,BLNK,FLIB,FNJ,FWLI,FBAT
        CHARACTER*11 ZASYM(NMAT),FZASYM(NFIS)
        CHARACTER*6  FMAT(NFP)
        DIMENSION AZE(NFPE),RIDE(NFPE),YE(NFIS,NFPE)
@@ -293,7 +293,7 @@ C*        BATCH FILE
        OPEN (UNIT=LBT,FILE=FBAT,ERR=12)
 C* Default Unix script file (arbitrary extension --> ISYS=1)
        ISYS=1
-       DO J=1,40
+       DO J=1,80
          IF(FBAT(J:J).EQ.'.') THEN
 C* Check if DOS Batch file is required (extension ".bat" --> ISYS=0)
            IF( (FBAT(J+1:J+1).EQ.'B' .OR. FBAT(J+1:J+1).EQ.'b') .AND.
@@ -364,7 +364,7 @@ C* Write Unix script file
        CLOSE(LWI)
        CLOSE(LBT)
        STOP 'PSEUDO NORMAL END'
-   15  FORMAT(2A40)
+   15  FORMAT(2A80)
    16  FORMAT(A40,A11)
    17  FORMAT(A40,I5)
    20  FORMAT(A80)
@@ -410,7 +410,7 @@ C*    General NJOY input options for fission products.
       DATA SIG0/1.0E10,1.0E5,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0/
       DATA ERR/0.002/,TEMPR/0.0/,ERRMAX/0.005/
       DATA ERRTHN/0.002/
-      DATA NBIN/12/,IINC/1/,ICOH/0/,NATOM/1/,MTREF/221/
+      DATA NBIN/12/,IINC/1/,ICOH/0/,IFORM/0/,NATOM/1/,MTREF/221/
       DATA TOL/0.005/,EMAX/4.0/
       DATA IGN/9/,IGG/0/,IWT/-1/,LORD/1/,MT252/252/,MF3/3/,MF6/6/
 C* Neutron spectrum weighting function
@@ -567,13 +567,13 @@ C*   unresr
 C*   thermr
        WRITE(LNJ,10)'thermr / Add thermal scattering on Unit-26 '
        WRITE(LNJ,30)0,-24,-26
-       WRITE(LNJ,50)N0,MAT,NBIN,KT,IINC,ICOH,NATOM,MTREF,N1
+       WRITE(LNJ,51)N0,MAT,NBIN,KT,IINC,ICOH,IFORM,NATOM,MTREF,N1
        WRITE(LNJ,130)(TEMP(K),K=1,KT)
        WRITE(LNJ,150)TOL,EMAX
 C*   groupr
        WRITE(LNJ,10)'groupr / Generate GENDF tape on Unit-25    '
        WRITE(LNJ,30)-21,-26,0,-25
-       WRITE(LNJ,70)MAT,IGN,IGG,IWT,LORD,KT,KS0,N1
+       WRITE(LNJ,70)MAT,IGN,IGG,IWT,LORD,KT,KS0,N1,ISMOOTH
        WRITE(LNJ,160)'''',ZASYM,' FROM ',LNAME,'''',' /'
        WRITE(LNJ,130)(TEMP(K),K=1,KT)
        WRITE(LNJ,140)(SIG0(K),K=1,KS0)
@@ -627,10 +627,11 @@ C*    stop
    30  FORMAT(I3,3I4)
    40  FORMAT(A1,1X,A9,1X,A11,A1,A2)
    50  FORMAT(I3,I5,5I3,I4,I3)
+   51  FORMAT(I3,I5,6I3,I4,I3)
    60  FORMAT(A3)
    65  FORMAT(A1,A15,A11,A6,A9,A1,A2)
    68  FORMAT(I4,I3,A2)
-   70  FORMAT(I4,7I3)
+   70  FORMAT(I4,8I3)
    80  FORMAT(F5.3,F4.1,F6.3,A2)
    90  FORMAT(A1,A11,A6,A9,A1,A2)
   100  FORMAT(A1,A25,A1,A2)
@@ -665,7 +666,7 @@ C-D   YI   function values corresponding to XI(i)
 C-D    M   number of points in the output mesh
 C-D   XO   output argument mesh (array of M values in monotonic order)
 C-D   YO   interpolated function values corresponding to XO(i) (Output)
-C-D   Y1   interpolated derivative values corresponding to XO(i) (Output)
+C-D   Y1   interpolated derivative values corresponding to XO(i) (Output
 C-D        NOTE: if derivatives ara not required, the same array may be
 C-D              specified for Y0 and Y1 (i.e.: implicit equivalence)
 C-D   F1   second derivative in the first interval (usually zero)
